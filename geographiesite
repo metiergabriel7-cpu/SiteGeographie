@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>GéoQuiz · Explore le Monde</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{height:100%}
+body{min-height:100%;background:#04060f;color:#eef0f8;font-family:'Outfit',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+:root{
+  --gold:#f0b429;--gold2:#fde68a;--cyan:#00eeff;--green:#22d982;--red:#ff4d6d;
+  --violet:#b48eff;--orange:#ff8c42;
+  --s1:#0b0e1c;--s2:#111626;--s3:#1a2038;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);
+  --dim:#5a6480;--muted:#8892b0;
+}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 900px 600px at 15% -5%,rgba(240,180,41,.055) 0%,transparent 60%),
+  radial-gradient(ellipse 700px 500px at 85% 105%,rgba(0,238,255,.04) 0%,transparent 55%),
+  radial-gradient(ellipse 500px 400px at 50% 60%,rgba(180,142,255,.025) 0%,transparent 55%)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px}
+
+/* SCREENS */
+.screen{display:none;position:relative;z-index:1}
+.screen.act{display:flex;flex-direction:column;min-height:100vh}
+
+/* HOME */
+#home{align-items:center;justify-content:center;padding:48px 20px 60px;gap:40px}
+
+/* Globe */
+.globe-outer{position:relative;width:160px;height:160px;flex-shrink:0;animation:gFloat 7s ease-in-out infinite}
+@keyframes gFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.globe-ball{width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(circle at 38% 30%,#1a4a70 0%,#0d2d4a 40%,#061422 80%);
+  box-shadow:0 0 0 1px rgba(0,238,255,.18),0 0 50px rgba(0,238,255,.07),0 30px 60px rgba(0,0,0,.6),
+  inset -30px -20px 50px rgba(0,0,0,.5),inset 16px 12px 30px rgba(0,238,255,.06);
+  position:relative;overflow:hidden}
+.globe-ball::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent 0,transparent 22px,rgba(0,238,255,.03) 22px,rgba(0,238,255,.03) 23px)}
+.globe-ball::after{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0,transparent 32px,rgba(0,238,255,.025) 32px,rgba(0,238,255,.025) 33px)}
+.globe-shine{position:absolute;top:20px;left:30px;width:44px;height:26px;
+  background:radial-gradient(ellipse,rgba(255,255,255,.13) 0%,transparent 70%);
+  border-radius:50%;transform:rotate(-25deg)}
+.globe-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(72deg);
+  width:210px;height:210px;border-radius:50%;border:1px solid rgba(0,238,255,.13);pointer-events:none}
+.globe-ring2{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotateX(72deg);
+  width:242px;height:242px;border-radius:50%;border:1px solid rgba(0,238,255,.05);pointer-events:none}
+
+/* Hero */
+.hero{text-align:center;max-width:540px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;margin-bottom:18px}
+.eyebrow span{width:28px;height:1px;background:var(--gold);opacity:.5;display:block}
+h1.title{font-family:'Bebas Neue',sans-serif;font-size:clamp(80px,18vw,148px);line-height:.84;letter-spacing:.025em;margin-bottom:16px}
+.t1{display:block;background:linear-gradient(160deg,#fff 0%,#c9d4ff 50%,#9aaeff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.t2{display:block;background:linear-gradient(135deg,var(--gold2),var(--gold),#d97706);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  filter:drop-shadow(0 0 40px rgba(240,180,41,.35))}
+.hero-desc{font-size:15px;font-weight:300;color:var(--muted);line-height:1.75}
+.hero-desc b{color:var(--gold);font-weight:600}
+
+/* Badges */
+.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.badge{display:flex;align-items:center;gap:6px;padding:5px 13px;border-radius:100px;
+  font-family:'JetBrains Mono',monospace;font-size:11px;
+  background:var(--s2);border:1px solid var(--border2);color:var(--dim)}
+.badge b{color:var(--muted)}
+
+/* Config */
+.config{width:100%;max-width:540px}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.sec-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.sec-line{flex:1;height:1px;background:var(--border)}
+.mode-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+@media(max-width:440px){.mode-grid{grid-template-columns:repeat(2,1fr)}}
+
+.mc{background:var(--s2);border:1px solid var(--border);border-radius:16px;padding:20px 12px;
+  cursor:pointer;text-align:center;transition:all .22s cubic-bezier(.4,0,.2,1);
+  position:relative;overflow:hidden;user-select:none}
+.mc:hover{transform:translateY(-3px);border-color:var(--border2);background:var(--s3)}
+.mc.on{border-color:var(--mc-col,var(--gold));background:rgba(var(--mc-rgb,240,180,41),0.07);transform:translateY(-3px)}
+.mc.on::after{content:'✓';position:absolute;top:8px;right:11px;font-size:11px;font-weight:700;color:var(--mc-col,var(--gold))}
+.mc[data-m="capitales"]{--mc-col:var(--gold);--mc-rgb:240,180,41}
+.mc[data-m="fleuves"]{--mc-col:var(--cyan);--mc-rgb:0,238,255}
+.mc[data-m="montagnes"]{--mc-col:var(--red);--mc-rgb:255,77,109}
+.mc[data-m="pays"]{--mc-col:var(--green);--mc-rgb:34,217,130}
+.mc[data-m="carte"]{--mc-col:var(--violet);--mc-rgb:180,142,255}
+.mc[data-m="sprint"]{--mc-col:var(--orange);--mc-rgb:255,140,66}
+.mc-ico{font-size:30px;display:block;margin-bottom:9px;line-height:1}
+.mc-name{font-size:13px;font-weight:700;display:block;color:#eef0f8}
+.mc-sub{font-size:11px;color:var(--dim);margin-top:2px;display:block;line-height:1.4}
+
+/* Difficulty */
+.diff-row{display:flex;gap:8px;margin-bottom:28px}
+.db{flex:1;padding:14px 10px;border-radius:13px;border:1px solid var(--border);background:var(--s2);
+  color:var(--dim);font-family:'Outfit',sans-serif;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .2s;text-align:center;line-height:1.35}
+.db:hover{border-color:var(--border2);color:var(--muted)}
+.db[data-d="facile"].on{border-color:var(--green);color:var(--green);background:rgba(34,217,130,.07)}
+.db[data-d="moyen"].on{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.07)}
+.db[data-d="difficile"].on{border-color:var(--red);color:var(--red);background:rgba(255,77,109,.07)}
+
+.btn-go{width:100%;padding:19px;border:none;border-radius:15px;
+  background:linear-gradient(135deg,var(--gold2),var(--gold) 50%,#d97706);
+  color:#160c00;font-family:'Outfit',sans-serif;font-size:17px;font-weight:800;letter-spacing:.02em;
+  cursor:pointer;position:relative;overflow:hidden;transition:all .25s;
+  box-shadow:0 4px 28px rgba(240,180,41,.28),0 1px 0 rgba(255,255,255,.18) inset}
+.btn-go::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);
+  transform:translateX(-100%);transition:transform .45s}
+.btn-go:hover{transform:translateY(-2px);box-shadow:0 10px 50px rgba(240,180,41,.42)}
+.btn-go:hover::before{transform:translateX(100%)}
+.btn-go:active{transform:translateY(0)}
+.btn-go:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* TOPBAR */
+#quiz{background:var(--s1)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;gap:10px;
+  background:rgba(4,6,15,.92);border-bottom:1px solid var(--border);backdrop-filter:blur(18px);
+  position:sticky;top:0;z-index:50}
+.tb-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:6px;padding:6px 13px;border-radius:100px;
+  font-family:'JetBrains Mono',monospace;font-size:12px}
+.chip-score{background:rgba(240,180,41,.1);border:1px solid rgba(240,180,41,.22);color:var(--gold)}
+.chip-q{background:var(--s2);border:1px solid var(--border);color:var(--dim);font-size:11px}
+.chip-streak{background:rgba(34,217,130,.09);border:1px solid rgba(34,217,130,.22);color:var(--green);display:none}
+.chip-streak.vis{display:flex}
+.chip-time{background:rgba(255,77,109,.09);border:1px solid rgba(255,77,109,.22);color:var(--red);
+  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.05em;padding:3px 14px;display:none}
+.chip-time.vis{display:flex}
+.chip-time.hot{animation:hotPulse .55s ease infinite alternate}
+@keyframes hotPulse{from{opacity:1}to{opacity:.45}}
+.btn-quit{background:none;border:1px solid var(--border);color:var(--dim);border-radius:100px;
+  padding:6px 15px;font-family:'Outfit',sans-serif;font-size:13px;cursor:pointer;transition:all .18s}
+.btn-quit:hover{border-color:var(--red);color:var(--red)}
+.pbar{height:2px;background:rgba(255,255,255,.04);overflow:hidden}
+.pbar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--cyan));
+  transition:width .55s cubic-bezier(.4,0,.2,1);box-shadow:0 0 10px rgba(240,180,41,.5)}
+
+/* QUIZ BODY */
+.qbody{flex:1;display:flex;flex-direction:column;max-width:620px;width:100%;margin:0 auto;padding:30px 18px 48px;gap:18px}
+.q-in{animation:qSlide .35s cubic-bezier(.4,0,.2,1) both}
+@keyframes qSlide{from{opacity:0;transform:translateY(14px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+.q-card{background:var(--s2);border:1px solid var(--border);border-radius:22px;padding:28px 26px;position:relative;overflow:hidden}
+.q-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--qbar,var(--gold)) 50%,transparent);opacity:.6}
+.q-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-bottom:16px}
+.q-flag{font-size:50px;line-height:1;display:block;margin-bottom:14px;filter:drop-shadow(0 4px 14px rgba(0,0,0,.45))}
+.q-text{font-size:20px;font-weight:600;line-height:1.4;color:#eef0f8}
+.q-fact{margin-top:14px;padding:11px 15px;background:rgba(0,238,255,.04);
+  border-left:2px solid rgba(0,238,255,.3);border-radius:0 10px 10px 0;
+  font-size:13px;color:var(--muted);line-height:1.65;display:none}
+.q-fact.vis{display:block}
+
+/* MCQ */
+.mcq{display:flex;flex-direction:column;gap:9px}
+.mcq-btn{display:flex;align-items:center;gap:13px;padding:15px 17px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:13px;
+  color:#eef0f8;font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;
+  cursor:pointer;text-align:left;width:100%;transition:all .18s;position:relative;overflow:hidden}
+.mcq-btn:hover{border-color:var(--border2);transform:translateX(3px);background:rgba(255,255,255,.05)}
+.mcq-btn:disabled{cursor:default;transform:none}
+.mcq-ltr{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);
+  display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--dim);flex-shrink:0;transition:all .18s}
+.mcq-btn.hit{border-color:var(--green);background:rgba(34,217,130,.08);color:var(--green)}
+.mcq-btn.hit .mcq-ltr{background:rgba(34,217,130,.18);color:var(--green)}
+.mcq-btn.miss{border-color:var(--red);background:rgba(255,77,109,.08);color:var(--red)}
+.mcq-btn.miss .mcq-ltr{background:rgba(255,77,109,.18);color:var(--red)}
+
+/* TEXT ANSWER */
+.txt-row{display:flex;gap:9px}
+.txt-inp{flex:1;padding:15px 17px;background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:13px;color:#eef0f8;font-family:'Outfit',sans-serif;font-size:15px;
+  outline:none;transition:border-color .18s,box-shadow .18s}
+.txt-inp:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,238,255,.08)}
+.txt-inp::placeholder{color:var(--dim)}
+.txt-inp:disabled{cursor:default}
+.txt-inp.hit{border-color:var(--green);background:rgba(34,217,130,.07)}
+.txt-inp.miss{border-color:var(--red);background:rgba(255,77,109,.07)}
+.btn-val{padding:15px 20px;background:linear-gradient(135deg,var(--cyan),#0891b2);
+  color:#001820;border:none;border-radius:13px;font-family:'Outfit',sans-serif;
+  font-size:14px;font-weight:800;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.btn-val:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(0,238,255,.3)}
+.btn-val:disabled{opacity:.38;cursor:default;transform:none;box-shadow:none}
+
+/* FEEDBACK */
+.fb{border-radius:13px;padding:13px 17px;font-size:14px;font-weight:500;
+  display:none;align-items:flex-start;gap:11px;line-height:1.5}
+.fb.vis{display:flex;animation:qSlide .25s ease both}
+.fb.hit{background:rgba(34,217,130,.08);border:1px solid rgba(34,217,130,.22);color:var(--green)}
+.fb.miss{background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.22);color:var(--red)}
+.fb-ico{font-size:20px;flex-shrink:0;margin-top:1px}
+.fb-msg strong{color:#eef0f8}
+.btn-next{align-self:flex-end;padding:12px 24px;background:var(--s3);border:1px solid var(--border2);
+  border-radius:11px;color:#eef0f8;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:all .18s;display:none}
+.btn-next.vis{display:block}
+.btn-next:hover{border-color:var(--gold);color:var(--gold);background:rgba(240,180,41,.06)}
+
+/* MAP */
+#mapscreen{background:var(--s1);display:none}
+#mapscreen.act{display:flex;flex-direction:column;min-height:100vh}
+.map-topbar{display:flex;align-items:center;gap:12px;padding:11px 18px;
+  background:rgba(4,6,15,.96);border-bottom:1px solid var(--border);backdrop-filter:blur(18px);
+  position:sticky;top:0;z-index:50;flex-wrap:wrap}
+.map-qlabel{display:flex;align-items:center;gap:10px;flex:1;min-width:160px}
+.map-flag{font-size:26px;flex-shrink:0}
+.map-qtxt{font-size:14px;font-weight:700}
+.map-qcat{font-size:11px;color:var(--dim);margin-top:1px;font-family:'JetBrains Mono',monospace}
+.map-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.chip-map{background:rgba(180,142,255,.1);border:1px solid rgba(180,142,255,.25);color:var(--violet)}
+
+/* Map */
+.map-wrap{position:relative;overflow:hidden;background:#050c1c;cursor:crosshair;
+  flex:1;min-height:55vw;max-height:72vh}
+.map-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:55px;z-index:5;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(5,12,28,.8),transparent)}
+.map-wrap::after{content:'';position:absolute;bottom:0;left:0;right:0;height:55px;z-index:5;pointer-events:none;
+  background:linear-gradient(to top,rgba(3,8,18,.8),transparent)}
+#mapSvg{position:absolute;inset:0;width:100%;height:100%}
+#pinsSvg{position:absolute;inset:0;width:100%;height:100%;z-index:10;pointer-events:none}
+.click-hint{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;z-index:15;pointer-events:none;transition:opacity .4s}
+.click-hint.gone{opacity:0;pointer-events:none}
+.ch-ring{width:64px;height:64px;border-radius:50%;border:2px solid rgba(180,142,255,.5);
+  animation:chRing 2s ease infinite;display:flex;align-items:center;justify-content:center;font-size:24px}
+@keyframes chRing{0%{transform:scale(.8);opacity:1}100%{transform:scale(1.8);opacity:0}}
+.ch-txt{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:14px}
+.map-popup{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  background:rgba(4,6,15,.96);backdrop-filter:blur(20px);border:1px solid var(--border2);
+  border-radius:18px;padding:20px 28px;text-align:center;z-index:20;min-width:220px;
+  box-shadow:0 12px 50px rgba(0,0,0,.55);display:none}
+.map-popup.vis{display:block;animation:popIn .35s cubic-bezier(.4,0,.2,1) both}
+@keyframes popIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.pop-dist{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.04em;line-height:1;margin-bottom:3px}
+.pop-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+.btn-mapnext{padding:10px 24px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,var(--violet),#7c3aed);color:#fff;
+  font-family:'Outfit',sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;
+  box-shadow:0 4px 18px rgba(124,58,237,.35)}
+.btn-mapnext:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(124,58,237,.5)}
+
+/* RESULTS */
+#results{align-items:center;justify-content:center;padding:56px 24px;gap:34px;text-align:center;
+  background:radial-gradient(ellipse 80% 45% at 50% -8%,rgba(240,180,41,.07) 0%,transparent 55%)}
+.res-ring-wrap{position:relative;width:156px;height:156px;flex-shrink:0}
+#resCanvas{border-radius:50%}
+.res-ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.res-big{font-family:'Bebas Neue',sans-serif;font-size:52px;line-height:1;color:var(--gold)}
+.res-denom{font-size:12px;color:var(--dim);margin-top:2px}
+.res-hero{animation:fadeUp .5s ease .3s both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.res-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,10vw,80px);letter-spacing:.03em;
+  background:linear-gradient(135deg,#fff,var(--gold2));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.res-sub{font-size:15px;font-weight:300;color:var(--muted)}
+.res-stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;animation:fadeUp .5s ease .45s both}
+.rs{background:var(--s2);border:1px solid var(--border);border-radius:15px;padding:17px 22px;min-width:85px}
+.rs-n{font-family:'Bebas Neue',sans-serif;font-size:42px;line-height:1;display:block}
+.rs-l{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin-top:3px;display:block}
+.res-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;animation:fadeUp .5s ease .6s both}
+.btn-replay{padding:17px 38px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--gold2),var(--gold),#d97706);color:#160c00;
+  font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;cursor:pointer;transition:all .22s;
+  box-shadow:0 4px 26px rgba(240,180,41,.28)}
+.btn-replay:hover{transform:translateY(-2px);box-shadow:0 10px 46px rgba(240,180,41,.45)}
+.btn-home{padding:17px 32px;background:var(--s2);border:1px solid var(--border2);border-radius:14px;
+  color:#eef0f8;font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .18s}
+.btn-home:hover{border-color:var(--cyan);color:var(--cyan)}
+
+#confetti{position:fixed;inset:0;z-index:9999;pointer-events:none;display:none}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<!-- HOME -->
+<div id="home" class="screen act">
+  <div class="globe-outer">
+    <div class="globe-ball"><div class="globe-shine"></div></div>
+    <div class="globe-ring"></div><div class="globe-ring2"></div>
+  </div>
+  <div class="hero">
+    <div class="eyebrow"><span></span>Jeu de géographie<span></span></div>
+    <h1 class="title"><span class="t1">GÉO</span><span class="t2">QUIZ</span></h1>
+    <p class="hero-desc">Capitales · Fleuves · Montagnes<br><b>+ Placement interactif sur carte</b></p>
+  </div>
+  <div class="badges">
+    <div class="badge"><b>100+</b>&nbsp;questions</div>
+    <div class="badge"><b>6</b>&nbsp;modes</div>
+    <div class="badge"><b>3</b>&nbsp;niveaux</div>
+    <div class="badge"><b>∞</b>&nbsp;rejouable</div>
+  </div>
+  <div class="config">
+    <div class="sec-head"><span class="sec-lbl">Mode de jeu</span><div class="sec-line"></div></div>
+    <div class="mode-grid">
+      <div class="mc" data-m="capitales" onclick="selMode(this)"><span class="mc-ico">⭐</span><span class="mc-name">Capitales</span><span class="mc-sub">85 pays</span></div>
+      <div class="mc" data-m="fleuves" onclick="selMode(this)"><span class="mc-ico">🌊</span><span class="mc-name">Fleuves</span><span class="mc-sub">20 fleuves</span></div>
+      <div class="mc" data-m="montagnes" onclick="selMode(this)"><span class="mc-ico">🏔️</span><span class="mc-name">Montagnes</span><span class="mc-sub">20 sommets</span></div>
+      <div class="mc" data-m="pays" onclick="selMode(this)"><span class="mc-ico">🗺️</span><span class="mc-name">Pays</span><span class="mc-sub">Curiosités</span></div>
+      <div class="mc" data-m="carte" onclick="selMode(this)"><span class="mc-ico">📍</span><span class="mc-name">Sur la carte</span><span class="mc-sub">Clique le bon endroit</span></div>
+      <div class="mc" data-m="sprint" onclick="selMode(this)"><span class="mc-ico">⚡</span><span class="mc-name">Sprint 60s</span><span class="mc-sub">Max de réponses</span></div>
+    </div>
+    <div class="sec-head"><span class="sec-lbl">Difficulté</span><div class="sec-line"></div></div>
+    <div class="diff-row">
+      <button class="db" data-d="facile" onclick="selDiff(this)">😊<br>Facile<br><small style="font-weight:400;opacity:.65">QCM</small></button>
+      <button class="db" data-d="moyen" onclick="selDiff(this)">🧠<br>Moyen<br><small style="font-weight:400;opacity:.65">Tape</small></button>
+      <button class="db" data-d="difficile" onclick="selDiff(this)">🔥<br>Difficile<br><small style="font-weight:400;opacity:.65">Précis</small></button>
+    </div>
+    <button class="btn-go" id="btnGo" onclick="launch()" disabled>🚀 &nbsp;Lancer la partie</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="screen">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="chip chip-score">⭐&nbsp;<span id="scoreVal">0</span></div>
+      <div class="chip chip-q" id="qNumChip">Q 1/10</div>
+      <div class="chip chip-streak" id="streakChip">🔥&nbsp;×<span id="streakVal">0</span></div>
+      <div class="chip chip-time" id="timeChip">60</div>
+    </div>
+    <button class="btn-quit" onclick="toHome()">✕ Quitter</button>
+  </div>
+  <div class="pbar"><div class="pbar-fill" id="pbarFill" style="width:0%"></div></div>
+  <div class="qbody" id="qbody"></div>
+</div>
+
+<!-- MAP -->
+<div id="mapscreen" class="screen">
+  <div class="map-topbar">
+    <div class="map-qlabel">
+      <span class="map-flag" id="mFlag">🌍</span>
+      <div><div class="map-qtxt" id="mQTxt">Où se trouve… ?</div><div class="map-qcat" id="mQCat">Capitale</div></div>
+    </div>
+    <div class="map-right">
+      <div class="chip chip-map">📍&nbsp;<span id="mScoreVal">0</span></div>
+      <div class="chip chip-q" id="mQNum">1/10</div>
+      <button class="btn-quit" onclick="toHome()">✕</button>
+    </div>
+  </div>
+  <div class="pbar"><div class="pbar-fill" id="mPbarFill" style="width:0%"></div></div>
+  <div class="map-wrap" id="mapWrap" onclick="onMapClick(event)">
+    <svg id="mapSvg" viewBox="0 0 2000 1001" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="og" cx="50%" cy="45%" r="75%"><stop offset="0%" stop-color="#0d2240"/><stop offset="100%" stop-color="#040d1e"/></radialGradient>
+        <radialGradient id="lg" cx="35%" cy="30%" r="80%"><stop offset="0%" stop-color="#1e4030"/><stop offset="100%" stop-color="#0d2018"/></radialGradient>
+        <filter id="gf"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="2000" height="1001" fill="url(#og)"/>
+      <g stroke="rgba(0,238,255,.04)" stroke-width=".8" fill="none">
+        <line x1="0" y1="200" x2="2000" y2="200"/><line x1="0" y1="400" x2="2000" y2="400"/>
+        <line x1="0" y1="600" x2="2000" y2="600"/><line x1="0" y1="800" x2="2000" y2="800"/>
+        <line x1="250" y1="0" x2="250" y2="1001"/><line x1="500" y1="0" x2="500" y2="1001"/>
+        <line x1="750" y1="0" x2="750" y2="1001"/><line x1="1000" y1="0" x2="1000" y2="1001"/>
+        <line x1="1250" y1="0" x2="1250" y2="1001"/><line x1="1500" y1="0" x2="1500" y2="1001"/>
+        <line x1="1750" y1="0" x2="1750" y2="1001"/>
+      </g>
+      <line x1="0" y1="500" x2="2000" y2="500" stroke="rgba(240,180,41,.18)" stroke-width="1.5"/>
+      <line x1="0" y1="382" x2="2000" y2="382" stroke="rgba(240,180,41,.06)" stroke-width="1" stroke-dasharray="8 8"/>
+      <line x1="0" y1="618" x2="2000" y2="618" stroke="rgba(240,180,41,.06)" stroke-width="1" stroke-dasharray="8 8"/>
+      <!-- NORTH AMERICA -->
+      <path d="M58,92 Q130,70 205,65 Q275,60 330,95 Q376,124 392,168 Q408,212 415,252 Q420,290 410,325 Q398,360 374,386 Q348,412 318,428 Q288,444 264,460 Q240,476 225,498 Q208,522 194,546 Q180,560 166,546 Q148,524 128,494 Q106,460 84,426 Q62,392 54,350 Q43,302 47,254 Q50,204 54,158 Q57,118 58,92Z" fill="url(#lg)" stroke="rgba(0,238,255,.22)" stroke-width="1.5" filter="url(#gf)"/>
+      <path d="M26,74 Q60,60 92,76 Q105,95 88,112 Q70,126 44,114 Q22,100 26,74Z" fill="#152e22" stroke="rgba(0,238,255,.15)" stroke-width="1"/>
+      <path d="M195,464 Q222,452 244,470 Q254,492 244,514 Q230,534 208,538 Q186,536 172,518 Q160,498 168,478 Q176,464 195,464Z" fill="#152e22" stroke="rgba(0,238,255,.14)" stroke-width="1"/>
+      <path d="M374,18 Q426,6 468,28 Q492,50 482,84 Q470,118 438,130 Q408,140 382,122 Q356,104 350,74 Q344,46 374,18Z" fill="#162636" stroke="rgba(0,238,255,.15)" stroke-width="1"/>
+      <!-- SOUTH AMERICA -->
+      <path d="M255,516 Q298,500 344,512 Q380,526 402,560 Q424,596 426,638 Q428,682 416,722 Q402,762 380,796 Q354,830 322,848 Q290,864 258,854 Q226,842 204,814 Q182,786 168,752 Q152,712 150,668 Q147,622 162,578 Q178,536 216,520 Q234,514 255,516Z" fill="url(#lg)" stroke="rgba(0,238,255,.22)" stroke-width="1.5" filter="url(#gf)"/>
+      <!-- EUROPE -->
+      <path d="M434,174 Q480,158 528,166 Q567,176 585,202 Q604,230 596,260 Q588,286 562,302 Q534,316 504,320 Q472,322 446,308 Q418,294 408,266 Q398,238 408,210 Q416,188 434,174Z" fill="url(#lg)" stroke="rgba(0,238,255,.26)" stroke-width="1.5" filter="url(#gf)"/>
+      <path d="M478,92 Q512,78 538,96 Q556,116 548,146 Q538,170 515,178 Q490,184 472,168 Q452,152 452,128 Q452,106 478,92Z" fill="#162e22" stroke="rgba(0,238,255,.16)" stroke-width="1"/>
+      <path d="M416,298 Q452,284 474,302 Q490,322 482,348 Q472,368 450,376 Q428,380 412,364 Q396,348 398,322 Q400,304 416,298Z" fill="#162e22" stroke="rgba(0,238,255,.13)" stroke-width="1"/>
+      <path d="M509,292 Q525,280 538,294 Q545,314 534,338 Q524,356 508,362 Q493,364 486,347 Q480,328 489,308 Q497,293 509,292Z" fill="#162e22" stroke="rgba(0,238,255,.13)" stroke-width="1"/>
+      <path d="M446,206 Q461,194 474,208 Q482,226 470,242 Q459,254 445,248 Q432,239 433,223 Q434,208 446,206Z" fill="#162e22" stroke="rgba(0,238,255,.13)" stroke-width="1"/>
+      <ellipse cx="398" cy="154" rx="32" ry="20" fill="#162636" stroke="rgba(0,238,255,.13)" stroke-width="1"/>
+      <!-- AFRICA -->
+      <path d="M435,316 Q482,302 530,316 Q570,330 594,366 Q616,404 616,448 Q616,492 604,536 Q590,580 568,618 Q542,658 511,688 Q478,718 444,728 Q410,736 378,718 Q346,700 324,670 Q302,640 290,600 Q276,558 276,514 Q274,470 287,428 Q302,386 330,356 Q358,326 435,316Z" fill="url(#lg)" stroke="rgba(0,238,255,.22)" stroke-width="1.5" filter="url(#gf)"/>
+      <path d="M616,556 Q628,542 639,554 Q648,574 641,600 Q633,622 619,626 Q607,624 600,606 Q593,584 601,566 Q607,556 616,556Z" fill="#162e22" stroke="rgba(0,238,255,.12)" stroke-width="1"/>
+      <!-- ASIA -->
+      <path d="M570,122 Q655,106 745,114 Q828,122 890,148 Q944,172 978,210 Q1010,250 1013,294 Q1015,338 993,372 Q970,406 930,422 Q888,438 843,435 Q796,432 752,415 Q706,397 672,367 Q636,335 614,293 Q590,248 578,200 Q565,154 570,122Z" fill="url(#lg)" stroke="rgba(0,238,255,.25)" stroke-width="1.5" filter="url(#gf)"/>
+      <path d="M596,356 Q636,342 666,358 Q690,376 688,408 Q685,440 662,457 Q636,472 609,463 Q583,452 572,424 Q562,396 576,372 Q584,358 596,356Z" fill="#162e22" stroke="rgba(0,238,255,.13)" stroke-width="1"/>
+      <path d="M659,380 Q703,367 734,388 Q757,410 753,444 Q750,476 728,500 Q705,522 676,528 Q647,532 626,513 Q605,493 604,463 Q602,432 618,406 Q634,384 659,380Z" fill="#162e22" stroke="rgba(0,238,255,.16)" stroke-width="1"/>
+      <path d="M742,394 Q782,380 813,396 Q836,414 832,444 Q826,470 806,483 Q782,494 756,487 Q730,478 720,452 Q711,426 722,406 Q730,396 742,394Z" fill="#162e22" stroke="rgba(0,238,255,.13)" stroke-width="1"/>
+      <path d="M708,236 Q763,218 818,232 Q858,248 872,284 Q882,318 863,348 Q842,376 806,385 Q768,392 732,376 Q697,358 685,322 Q672,285 686,258 Q695,240 708,236Z" fill="#162e22" stroke="rgba(0,238,255,.16)" stroke-width="1"/>
+      <path d="M832,287 Q848,274 861,286 Q869,306 859,328 Q847,344 830,340 Q815,334 814,313 Q813,294 832,287Z" fill="#182a3e" stroke="rgba(0,238,255,.18)" stroke-width="1"/>
+      <ellipse cx="824" cy="362" rx="11" ry="19" fill="#162e22" stroke="rgba(0,238,255,.12)" stroke-width="1"/>
+      <ellipse cx="797" cy="454" rx="13" ry="24" fill="#162e22" stroke="rgba(0,238,255,.11)" stroke-width="1"/>
+      <ellipse cx="756" cy="496" rx="30" ry="14" fill="#162e22" stroke="rgba(0,238,255,.12)" stroke-width="1"/>
+      <ellipse cx="836" cy="508" rx="26" ry="12" fill="#162e22" stroke="rgba(0,238,255,.10)" stroke-width="1"/>
+      <ellipse cx="820" cy="427" rx="7" ry="14" fill="#162e22" stroke="rgba(0,238,255,.09)" stroke-width="1"/>
+      <ellipse cx="701" cy="502" rx="7" ry="13" fill="#162e22" stroke="rgba(0,238,255,.09)" stroke-width=".8"/>
+      <path d="M820,72 Q912,57 998,70 Q1062,83 1080,118 Q1094,148 1074,178 Q1054,207 1016,218 Q974,229 932,222 Q888,214 852,194 Q814,172 805,140 Q794,108 820,72Z" fill="#162e22" stroke="rgba(0,238,255,.12)" stroke-width="1"/>
+      <!-- AUSTRALIA -->
+      <path d="M800,570 Q868,548 930,560 Q982,574 1006,612 Q1028,650 1020,694 Q1011,738 982,766 Q951,794 910,806 Q868,816 826,798 Q784,778 758,742 Q732,706 726,660 Q719,612 742,578 Q758,558 800,570Z" fill="url(#lg)" stroke="rgba(0,238,255,.22)" stroke-width="1.5" filter="url(#gf)"/>
+      <ellipse cx="967" cy="718" rx="19" ry="34" fill="#162e22" stroke="rgba(0,238,255,.13)" stroke-width="1" transform="rotate(-18 967 718)"/>
+      <ellipse cx="975" cy="765" rx="13" ry="23" fill="#162e22" stroke="rgba(0,238,255,.11)" stroke-width="1" transform="rotate(-13 975 765)"/>
+      <ellipse cx="258" cy="417" rx="26" ry="10" fill="#162e22" stroke="rgba(0,238,255,.11)" stroke-width="1" transform="rotate(-9 258 417)"/>
+      <circle cx="292" cy="430" r="5" fill="#162e22" stroke="rgba(0,238,255,.09)" stroke-width=".8"/>
+      <circle cx="304" cy="435" r="4" fill="#162e22" stroke="rgba(0,238,255,.08)" stroke-width=".8"/>
+      <ellipse cx="591" cy="306" rx="9" ry="6" fill="#162e22" stroke="rgba(0,238,255,.09)" stroke-width=".8"/>
+      <g font-family="'JetBrains Mono',monospace" fill="rgba(255,255,255,.08)" letter-spacing="3.5" text-anchor="middle">
+        <text x="216" y="285" font-size="11.5">AMÉRIQUE DU NORD</text>
+        <text x="310" y="638" font-size="11.5">AMÉRIQUE DU SUD</text>
+        <text x="505" y="228" font-size="11.5">EUROPE</text>
+        <text x="460" y="522" font-size="11.5">AFRIQUE</text>
+        <text x="760" y="265" font-size="11.5">ASIE</text>
+        <text x="878" y="660" font-size="11.5">AUSTRALIE</text>
+      </g>
+      <text x="12" y="493" font-family="'JetBrains Mono',monospace" font-size="9" fill="rgba(240,180,41,.22)" letter-spacing="2">ÉQUATEUR</text>
+    </svg>
+    <svg id="pinsSvg" viewBox="0 0 2000 1001" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="click-hint" id="clickHint">
+      <div class="ch-ring">👆</div>
+      <div class="ch-txt">Clique sur la carte</div>
+    </div>
+    <div class="map-popup" id="mapPopup">
+      <div class="pop-dist" id="popDist">🎯 Parfait !</div>
+      <div class="pop-sub" id="popSub">+500 points</div>
+      <button class="btn-mapnext" onclick="nextMapQ()">Question suivante →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="screen">
+  <div class="res-ring-wrap">
+    <canvas id="resCanvas" width="156" height="156"></canvas>
+    <div class="res-ring-inner">
+      <div class="res-big" id="resBigNum">0</div>
+      <div class="res-denom" id="resDenom">/ 10</div>
+    </div>
+  </div>
+  <div class="res-hero">
+    <div class="res-title" id="resTitle">BRAVO !</div>
+    <div class="res-sub" id="resSub">Continue comme ça !</div>
+  </div>
+  <div class="res-stats">
+    <div class="rs"><span class="rs-n" id="rsOk" style="color:var(--green)">0</span><span class="rs-l">Corrects</span></div>
+    <div class="rs"><span class="rs-n" id="rsKo" style="color:var(--red)">0</span><span class="rs-l">Faux</span></div>
+    <div class="rs"><span class="rs-n" id="rsPts" style="color:var(--gold)">0</span><span class="rs-l">Points</span></div>
+    <div class="rs"><span class="rs-n" id="rsBest" style="color:var(--violet)">0</span><span class="rs-l">Streak</span></div>
+  </div>
+  <div class="res-btns">
+    <button class="btn-replay" onclick="launch()">🔁 Rejouer</button>
+    <button class="btn-home" onclick="toHome()">🏠 Accueil</button>
+  </div>
+</div>
+
+<script>
+
+const DB={
+  capitales:[
+    {q:"Quelle est la capitale de la France ?",a:"Paris",flag:"🇫🇷",info:"Fondée il y a 2 000 ans sur l'île de la Cité."},
+    {q:"Quelle est la capitale du Japon ?",a:"Tokyo",flag:"🇯🇵",info:"37 millions d'habitants — la plus grande agglomération du monde."},
+    {q:"Quelle est la capitale du Brésil ?",a:"Brasília",flag:"🇧🇷",info:"Construite de zéro en 41 mois seulement. Inaugurée en 1960."},
+    {q:"Quelle est la capitale de l'Australie ?",a:"Canberra",flag:"🇦🇺",info:"Choisie comme compromis entre Sydney et Melbourne."},
+    {q:"Quelle est la capitale du Canada ?",a:"Ottawa",flag:"🇨🇦",info:"Sur la rivière Outaouais, frontière de l'Ontario et du Québec."},
+    {q:"Quelle est la capitale de l'Argentine ?",a:"Buenos Aires",flag:"🇦🇷",info:"Surnommée le Paris de l'Amérique du Sud."},
+    {q:"Quelle est la capitale de l'Égypte ?",a:"Le Caire",flag:"🇪🇬",info:"Plus grande ville d'Afrique avec 20 millions d'habitants."},
+    {q:"Quelle est la capitale de la Russie ?",a:"Moscou",flag:"🇷🇺",info:"Plus grande ville d'Europe. Fondée en 1147."},
+    {q:"Quelle est la capitale de la Chine ?",a:"Pékin",flag:"🇨🇳",info:"La Cité Interdite abrite le plus grand palais impérial au monde."},
+    {q:"Quelle est la capitale de l'Inde ?",a:"New Delhi",flag:"🇮🇳",info:"Ville planifiée par les Britanniques au début du XXe siècle."},
+    {q:"Quelle est la capitale du Mexique ?",a:"Mexico",flag:"🇲🇽",info:"Construite sur les ruines de Tenochtitlan, la capitale aztèque."},
+    {q:"Quelle est la capitale de l'Allemagne ?",a:"Berlin",flag:"🇩🇪",info:"Divisée par un mur de béton de 1961 à 1989."},
+    {q:"Quelle est la capitale de l'Italie ?",a:"Rome",flag:"🇮🇹",info:"La Ville Éternelle. Fondée selon la légende en 753 av. J.-C."},
+    {q:"Quelle est la capitale de l'Espagne ?",a:"Madrid",flag:"🇪🇸",info:"La capitale la plus haute d'Europe, à 667 mètres d'altitude."},
+    {q:"Quelle est la capitale du Royaume-Uni ?",a:"Londres",flag:"🇬🇧",info:"Sur la Tamise. L'une des plus grandes métropoles mondiales."},
+    {q:"Quelle est la capitale des États-Unis ?",a:"Washington D.C.",flag:"🇺🇸",info:"District fédéral qui n'appartient à aucun État américain."},
+    {q:"Quelle est la capitale du Portugal ?",a:"Lisbonne",flag:"🇵🇹",info:"Capitale des grands explorateurs du XVe siècle."},
+    {q:"Quelle est la capitale de la Suède ?",a:"Stockholm",flag:"🇸🇪",info:"La Venise du Nord, construite sur 14 îles."},
+    {q:"Quelle est la capitale de la Norvège ?",a:"Oslo",flag:"🇳🇴",info:"Capitale la plus verte d'Europe."},
+    {q:"Quelle est la capitale de la Finlande ?",a:"Helsinki",flag:"🇫🇮",info:"La fille de la Baltique. Fondée en 1550."},
+    {q:"Quelle est la capitale de la Pologne ?",a:"Varsovie",flag:"🇵🇱",info:"Entièrement reconstruite après avoir été rasée à 85% en 1944."},
+    {q:"Quelle est la capitale de l'Autriche ?",a:"Vienne",flag:"🇦🇹",info:"Berceau de Mozart et de Freud."},
+    {q:"Quelle est la capitale de la Grèce ?",a:"Athènes",flag:"🇬🇷",info:"Berceau de la démocratie occidentale."},
+    {q:"Quelle est la capitale des Pays-Bas ?",a:"Amsterdam",flag:"🇳🇱",info:"1 500 ponts sur ses célèbres canaux classés UNESCO."},
+    {q:"Quelle est la capitale de la Turquie ?",a:"Ankara",flag:"🇹🇷",info:"Remplace Istanbul comme capitale depuis 1923."},
+    {q:"Quelle est la capitale de l'Iran ?",a:"Téhéran",flag:"🇮🇷",info:"Aux pieds de la chaîne de l'Alborz."},
+    {q:"Quelle est la capitale de la Corée du Sud ?",a:"Séoul",flag:"🇰🇷",info:"L'une des villes les plus connectées technologiquement."},
+    {q:"Quelle est la capitale de la Thaïlande ?",a:"Bangkok",flag:"🇹🇭",info:"Son nom officiel thaï est le plus long nom de ville du monde."},
+    {q:"Quelle est la capitale de l'Indonésie ?",a:"Jakarta",flag:"🇮🇩",info:"En cours de remplacement par Nusantara."},
+    {q:"Quelle est la capitale du Nigeria ?",a:"Abuja",flag:"🇳🇬",info:"Remplace Lagos depuis 1991."},
+    {q:"Quelle est la capitale de l'Afrique du Sud ?",a:"Pretoria",flag:"🇿🇦",info:"L'Afrique du Sud possède trois capitales."},
+    {q:"Quelle est la capitale du Kenya ?",a:"Nairobi",flag:"🇰🇪",info:"Signifie «eau fraîche» en maasaï."},
+    {q:"Quelle est la capitale du Maroc ?",a:"Rabat",flag:"🇲🇦",info:"Capitale royale face à Salé."},
+    {q:"Quelle est la capitale de l'Algérie ?",a:"Alger",flag:"🇩🇿",info:"La Blanche, sur les rives de la Méditerranée."},
+    {q:"Quelle est la capitale du Pakistan ?",a:"Islamabad",flag:"🇵🇰",info:"Ville planifiée construite dans les années 1960."},
+    {q:"Quelle est la capitale de la Malaisie ?",a:"Kuala Lumpur",flag:"🇲🇾",info:"Les tours Petronas: plus hautes du monde de 1998 à 2004."},
+    {q:"Quelle est la capitale des Philippines ?",a:"Manille",flag:"🇵🇭",info:"L'une des villes les plus denses au monde."},
+    {q:"Quelle est la capitale du Pérou ?",a:"Lima",flag:"🇵🇪",info:"La Cité des Rois, fondée par Pizarro en 1535."},
+    {q:"Quelle est la capitale de la Colombie ?",a:"Bogotá",flag:"🇨🇴",info:"À 2 640 mètres d'altitude."},
+    {q:"Quelle est la capitale du Chili ?",a:"Santiago",flag:"🇨🇱",info:"Entre l'Océan Pacifique et les Andes."},
+    {q:"Quelle est la capitale de la Nouvelle-Zélande ?",a:"Wellington",flag:"🇳🇿",info:"La capitale la plus au sud du monde."},
+    {q:"Quelle est la capitale de l'Islande ?",a:"Reykjavik",flag:"🇮🇸",info:"La capitale la plus septentrionale du monde."},
+    {q:"Quelle est la capitale de la République Tchèque ?",a:"Prague",flag:"🇨🇿",info:"La ville aux cent clochers sur la Vltava."},
+    {q:"Quelle est la capitale de la Hongrie ?",a:"Budapest",flag:"🇭🇺",info:"Buda et Pest réunies en 1873 sur le Danube."},
+    {q:"Quelle est la capitale du Danemark ?",a:"Copenhague",flag:"🇩🇰",info:"62% des habitants pédalent chaque jour."},
+    {q:"Quelle est la capitale de la Belgique ?",a:"Bruxelles",flag:"🇧🇪",info:"Capitale de fait de l'Union Européenne."},
+    {q:"Quelle est la capitale de la Suisse ?",a:"Berne",flag:"🇨🇭",info:"Capitale fédérale médiévale classée UNESCO."},
+    {q:"Quelle est la capitale de la Roumanie ?",a:"Bucarest",flag:"🇷🇴",info:"Abrite le Palais du Parlement, le plus grand bâtiment du monde."},
+    {q:"Quelle est la capitale de l'Ukraine ?",a:"Kiev",flag:"🇺🇦",info:"Mère des villes slaves, fondée au VIIIe siècle."},
+    {q:"Quelle est la capitale de l'Irak ?",a:"Bagdad",flag:"🇮🇶",info:"Ancienne Babylone, carrefour de la route de la Soie."},
+    {q:"Quelle est la capitale de la Syrie ?",a:"Damas",flag:"🇸🇾",info:"L'une des plus anciennes villes habitées au monde."},
+    {q:"Quelle est la capitale du Liban ?",a:"Beyrouth",flag:"🇱🇧",info:"Surnommée le Paris du Moyen-Orient."},
+    {q:"Quelle est la capitale de la Jordanie ?",a:"Amman",flag:"🇯🇴",info:"L'ancienne Philadelphie sur sept collines."},
+    {q:"Quelle est la capitale de l'Arabie Saoudite ?",a:"Riyad",flag:"🇸🇦",info:"Capitale de la première réserve pétrolière mondiale."},
+    {q:"Quelle est la capitale du Qatar ?",a:"Doha",flag:"🇶🇦",info:"A accueilli la Coupe du Monde 2022."},
+    {q:"Quelle est la capitale des Émirats Arabes Unis ?",a:"Abu Dhabi",flag:"🇦🇪",info:"Abu Dhabi est la capitale; Dubaï est la plus grande ville."},
+    {q:"Quelle est la capitale du Vietnam ?",a:"Hanoï",flag:"🇻🇳",info:"Capitale millénaire au bord du fleuve Rouge."},
+    {q:"Quelle est la capitale de la Mongolie ?",a:"Oulan-Bator",flag:"🇲🇳",info:"La capitale la plus froide du monde."},
+    {q:"Quelle est la capitale du Kazakhstan ?",a:"Astana",flag:"🇰🇿",info:"Ville ultra-moderne rebaptisée plusieurs fois."},
+    {q:"Quelle est la capitale du Népal ?",a:"Katmandou",flag:"🇳🇵",info:"Aux portes de l'Himalaya. La ville aux mille temples."},
+    {q:"Quelle est la capitale de Singapour ?",a:"Singapour",flag:"🇸🇬",info:"L'un des trois seuls États-villes au monde."},
+    {q:"Quelle est la capitale du Ghana ?",a:"Accra",flag:"🇬🇭",info:"Carrefour entre l'Atlantique et l'Afrique."},
+    {q:"Quelle est la capitale de l'Éthiopie ?",a:"Addis-Abeba",flag:"🇪🇹",info:"Siège de l'Union Africaine. Signifie «nouvelle fleur»."},
+    {q:"Quelle est la capitale de la Tunisie ?",a:"Tunis",flag:"🇹🇳",info:"Proche des ruines de Carthage."},
+    {q:"Quelle est la capitale du Soudan ?",a:"Khartoum",flag:"🇸🇩",info:"À la confluence du Nil Blanc et du Nil Bleu."},
+    {q:"Quelle est la capitale de la Zambie ?",a:"Lusaka",flag:"🇿🇲",info:"Carrefour de l'Afrique australe."},
+    {q:"Quelle est la capitale du Zimbabwe ?",a:"Harare",flag:"🇿🇼",info:"Rebaptisée à l'indépendance en 1980."},
+    {q:"Quelle est la capitale de Madagascar ?",a:"Antananarivo",flag:"🇲🇬",info:"La ville des mille guerriers."},
+    {q:"Quelle est la capitale du Sénégal ?",a:"Dakar",flag:"🇸🇳",info:"Point le plus occidental du continent africain."},
+    {q:"Quelle est la capitale de la RD Congo ?",a:"Kinshasa",flag:"🇨🇩",info:"Face à Brazzaville — les deux capitales les plus proches du monde."},
+    {q:"Quelle est la capitale de Cuba ?",a:"La Havane",flag:"🇨🇺",info:"Joyau baroque des Caraïbes. Fondée en 1519."},
+    {q:"Quelle est la capitale de la Jamaïque ?",a:"Kingston",flag:"🇯🇲",info:"Berceau du reggae et de Bob Marley."},
+    {q:"Quelle est la capitale du Venezuela ?",a:"Caracas",flag:"🇻🇪",info:"Berceau de Simón Bolívar."},
+    {q:"Quelle est la capitale de la Géorgie ?",a:"Tbilissi",flag:"🇬🇪",info:"Fondée au Ve siècle, carrefour de l'Europe et de l'Asie."},
+    {q:"Quelle est la capitale de l'Azerbaïdjan ?",a:"Bakou",flag:"🇦🇿",info:"Sur la mer Caspienne, sous le niveau de la mer."},
+    {q:"Quelle est la capitale de la Croatie ?",a:"Zagreb",flag:"🇭🇷",info:"Les Croates ont inventé la cravate."},
+    {q:"Quelle est la capitale de la Serbie ?",a:"Belgrade",flag:"🇷🇸",info:"Berceau de Nikola Tesla."},
+    {q:"Quelle est la capitale de la Bulgarie ?",a:"Sofia",flag:"🇧🇬",info:"Habitée depuis 7 000 ans."},
+    {q:"Quelle est la capitale du Myanmar ?",a:"Naypyidaw",flag:"🇲🇲",info:"Construite secrètement de zéro, inaugurée en 2006."},
+  ],
+  fleuves:[
+    {q:"Sur quel continent coule le Nil ?",a:"Afrique",flag:"🌊",info:"6 650 km. A nourri la civilisation égyptienne pendant 5 000 ans."},
+    {q:"Sur quel continent coule l'Amazone ?",a:"Amérique du Sud",flag:"🌊",info:"Débite 20% de l'eau douce des fleuves du monde entier."},
+    {q:"Dans quel pays se trouve le Mississippi ?",a:"États-Unis",flag:"🌊",info:"3 730 km. Les Amérindiens l'appelaient «le père des eaux»."},
+    {q:"Sur quel continent coule le Yangtsé ?",a:"Asie",flag:"🌊",info:"6 300 km. Le plus long fleuve d'Asie."},
+    {q:"Sur quel continent coule le Congo ?",a:"Afrique",flag:"🌊",info:"Le fleuve le plus profond du monde — jusqu'à 230 mètres."},
+    {q:"Sur quel continent coule la Volga ?",a:"Europe",flag:"🌊",info:"3 690 km. Le plus long fleuve d'Europe."},
+    {q:"Combien de pays le Danube traverse-t-il ?",a:"10",flag:"🌊",info:"Le Danube traverse 10 pays — record mondial."},
+    {q:"Dans quel pays se trouve la Loire ?",a:"France",flag:"🌊",info:"1 012 km. Le plus long fleuve de France."},
+    {q:"Sur quel continent coule le Niger ?",a:"Afrique",flag:"🌊",info:"4 180 km. Décrit une grande boucle unique."},
+    {q:"Dans quel pays coule le Rhin ?",a:"Allemagne",flag:"🌊",info:"1 230 km. Frontière naturelle franco-allemande."},
+    {q:"Sur quel continent coule le Zambèze ?",a:"Afrique",flag:"🌊",info:"Abrite les chutes Victoria."},
+    {q:"Sur quel continent coule le Mékong ?",a:"Asie",flag:"🌊",info:"4 350 km. Fleuve sacré, nourrit 60 millions de personnes."},
+    {q:"Dans quel pays se trouve l'Indus ?",a:"Pakistan",flag:"🌊",info:"3 610 km. Berceau d'une civilisation il y a 5 000 ans."},
+    {q:"Sur quel continent coule le Gange ?",a:"Asie",flag:"🌊",info:"2 525 km. Fleuve sacré de l'hindouisme."},
+    {q:"Dans quel pays se trouve la Seine ?",a:"France",flag:"🌊",info:"775 km. Ses bouquinistes sont un patrimoine UNESCO."},
+    {q:"Sur quel continent coule l'Euphrate ?",a:"Asie",flag:"🌊",info:"Berceau de la civilisation mésopotamienne."},
+    {q:"Sur quel continent se trouve le Río Grande ?",a:"Amérique du Nord",flag:"🌊",info:"3 058 km. Frontière entre les États-Unis et le Mexique."},
+    {q:"Sur quel continent coule le Paraná ?",a:"Amérique du Sud",flag:"🌊",info:"4 880 km. Le barrage d'Itaipu s'y trouve."},
+    {q:"Dans quel pays se trouve le Rhône ?",a:"France",flag:"🌊",info:"812 km. Traverse Lyon et se jette en Méditerranée."},
+    {q:"Sur quel continent coule l'Ob ?",a:"Asie",flag:"🌊",info:"5 410 km. Troisième plus long fleuve du monde, en Sibérie."},
+  ],
+  montagnes:[
+    {q:"Dans quel pays se trouve l'Everest ?",a:"Népal",flag:"🏔️",info:"8 849 m. Le toit du monde. Gravi pour la 1ère fois en 1953."},
+    {q:"Dans quel pays se trouve le K2 ?",a:"Pakistan",flag:"🏔️",info:"8 611 m. Plus dangereux que l'Everest."},
+    {q:"Dans quel pays se trouve le Mont Blanc ?",a:"France",flag:"🏔️",info:"4 808 m. Le toit des Alpes et de l'Europe de l'Ouest."},
+    {q:"Dans quel pays se trouve le Kilimandjaro ?",a:"Tanzanie",flag:"🏔️",info:"5 895 m. Volcan enneigé sous l'équateur."},
+    {q:"Dans quel pays se trouve l'Elbrouz ?",a:"Russie",flag:"🏔️",info:"5 642 m. Le plus haut sommet d'Europe."},
+    {q:"Dans quel pays se trouve l'Aconcagua ?",a:"Argentine",flag:"🏔️",info:"6 961 m. Le plus haut sommet hors d'Asie."},
+    {q:"Dans quel pays se trouve le Denali ?",a:"États-Unis",flag:"🏔️",info:"6 190 m. Le toit de l'Amérique du Nord."},
+    {q:"Dans quel pays se trouve le Mont Fuji ?",a:"Japon",flag:"🏔️",info:"3 776 m. Volcan sacré gravi par 200 000 personnes par an."},
+    {q:"Dans quel pays se trouve le Mont Olympe ?",a:"Grèce",flag:"🏔️",info:"2 918 m. Demeure légendaire des dieux grecs."},
+    {q:"Dans quel pays se trouve le Kosciuszko ?",a:"Australie",flag:"🏔️",info:"2 228 m. Le toit de l'Australie continentale."},
+    {q:"Dans quel pays se trouve le Vésuve ?",a:"Italie",flag:"🏔️",info:"1 281 m. A détruit Pompéi en 79 apr. J.-C."},
+    {q:"Dans quel pays se trouve l'Etna ?",a:"Italie",flag:"🏔️",info:"3 357 m. Le plus grand volcan actif d'Europe."},
+    {q:"Dans quel pays se trouve le Popocatépetl ?",a:"Mexique",flag:"🏔️",info:"5 426 m. Volcan actif qui domine Mexico."},
+    {q:"Dans quel pays se trouve le Chimborazo ?",a:"Équateur",flag:"🏔️",info:"6 263 m. Le point de la Terre le plus loin de son centre."},
+    {q:"Dans quel pays se trouve le Mont Cook ?",a:"Nouvelle-Zélande",flag:"🏔️",info:"3 724 m. Aoraki pour les Maoris."},
+    {q:"Dans quel pays se trouve le Mont Logan ?",a:"Canada",flag:"🏔️",info:"5 959 m. Le plus haut sommet du Canada."},
+    {q:"Dans quel pays se trouve le Puncak Jaya ?",a:"Indonésie",flag:"🏔️",info:"4 884 m. Toit de l'Océanie. Gravi en 1962 seulement."},
+    {q:"Dans quel pays se trouve le Mont Vinson ?",a:"Antarctique",flag:"🏔️",info:"4 892 m. Le sommet le plus isolé du monde."},
+    {q:"Dans quel pays se trouve le Mont Wilhelm ?",a:"Papouasie-Nouvelle-Guinée",flag:"🏔️",info:"4 509 m. Point culminant de Papouasie-Nouvelle-Guinée."},
+    {q:"Dans quel pays se trouve le Cerro Torre ?",a:"Argentine",flag:"🏔️",info:"2 850 m. L'une des parois les plus difficiles au monde."},
+  ],
+  pays:[
+    {q:"Quel est le plus grand pays du monde ?",a:"Russie",flag:"🌍",info:"17 millions de km², 11 fuseaux horaires."},
+    {q:"Quel est le pays le plus peuplé ?",a:"Inde",flag:"🌍",info:"L'Inde a dépassé la Chine en 2023."},
+    {q:"Quel est le plus petit pays du monde ?",a:"Vatican",flag:"🌍",info:"0,44 km² — plus petit qu'un grand parc."},
+    {q:"Quel pays a la plus longue frontière côtière ?",a:"Canada",flag:"🌍",info:"202 080 km de côtes — record mondial."},
+    {q:"Quel est le pays le moins dense du monde ?",a:"Mongolie",flag:"🌍",info:"Moins de 2 habitants par km²."},
+    {q:"Quel pays possède le plus de sites UNESCO ?",a:"Italie",flag:"🌍",info:"58 sites classés UNESCO."},
+    {q:"Quel pays a aboli son armée en 1949 ?",a:"Costa Rica",flag:"🌍",info:"L'un des rares pays sans armée permanente."},
+    {q:"Dans quel pays sont les pyramides de Gizeh ?",a:"Égypte",flag:"🌍",info:"La seule des 7 Merveilles encore debout."},
+    {q:"Quel pays a le plus de frontières terrestres ?",a:"Chine",flag:"🌍",info:"14 pays voisins — record mondial."},
+    {q:"Dans quel pays est le Machu Picchu ?",a:"Pérou",flag:"🌍",info:"Cité inca à 2 430 m dans les Andes."},
+    {q:"Dans quel pays est né le café ?",a:"Éthiopie",flag:"🌍",info:"Originaire de la région de Kaffa au IXe siècle."},
+    {q:"Dans quel pays est la Grande Barrière de corail ?",a:"Australie",flag:"🌍",info:"La plus grande structure vivante du monde."},
+    {q:"Quel pays a historiquement le plus haut IDH ?",a:"Norvège",flag:"🌍",info:"En tête du classement IDH de nombreuses années."},
+    {q:"Dans quel pays se trouve Angkor Vat ?",a:"Cambodge",flag:"🌍",info:"Le plus grand complexe religieux du monde."},
+    {q:"Dans quel pays sont les chutes Angel ?",a:"Venezuela",flag:"🌍",info:"978 m — les plus hautes chutes d'eau du monde."},
+    {q:"Quel pays est le plus plat du monde ?",a:"Maldives",flag:"🌍",info:"Le point le plus haut ne dépasse pas 2,4 mètres."},
+    {q:"Dans quel pays se trouve la Cité Interdite ?",a:"Chine",flag:"🌍",info:"Plus grand palais impérial au monde."},
+    {q:"Quel est le pays le plus long nord-sud ?",a:"Chili",flag:"🌍",info:"4 300 km du nord au sud."},
+    {q:"Dans quel pays se trouve le Taj Mahal ?",a:"Inde",flag:"🌍",info:"Mausolée en marbre blanc construit en 1632."},
+    {q:"Quel est le seul pays doublement enclavé ?",a:"Ouzbékistan",flag:"🌍",info:"Entouré uniquement de pays eux-mêmes enclavés."},
+  ]
+};
+const MAP_DATA=[
+  {n:"Paris",flag:"🇫🇷",cat:"Capitale",x:48.5,y:37.0},
+  {n:"Londres",flag:"🇬🇧",cat:"Capitale",x:47.0,y:33.5},
+  {n:"Berlin",flag:"🇩🇪",cat:"Capitale",x:51.8,y:32.5},
+  {n:"Madrid",flag:"🇪🇸",cat:"Capitale",x:44.2,y:40.5},
+  {n:"Rome",flag:"🇮🇹",cat:"Capitale",x:52.5,y:42.0},
+  {n:"Moscou",flag:"🇷🇺",cat:"Capitale",x:60.5,y:28.5},
+  {n:"Pékin",flag:"🇨🇳",cat:"Capitale",x:78.8,y:35.0},
+  {n:"Tokyo",flag:"🇯🇵",cat:"Capitale",x:84.0,y:37.0},
+  {n:"Washington D.C.",flag:"🇺🇸",cat:"Capitale",x:27.5,y:38.5},
+  {n:"Brasília",flag:"🇧🇷",cat:"Capitale",x:33.5,y:62.0},
+  {n:"Le Caire",flag:"🇪🇬",cat:"Capitale",x:57.5,y:43.5},
+  {n:"New Delhi",flag:"🇮🇳",cat:"Capitale",x:68.0,y:45.0},
+  {n:"Jakarta",flag:"🇮🇩",cat:"Capitale",x:76.5,y:55.0},
+  {n:"Buenos Aires",flag:"🇦🇷",cat:"Capitale",x:31.5,y:72.5},
+  {n:"Mexico",flag:"🇲🇽",cat:"Capitale",x:20.5,y:46.5},
+  {n:"Nairobi",flag:"🇰🇪",cat:"Capitale",x:60.5,y:54.0},
+  {n:"Canberra",flag:"🇦🇺",cat:"Capitale",x:84.8,y:70.5},
+  {n:"Séoul",flag:"🇰🇷",cat:"Capitale",x:81.5,y:36.5},
+  {n:"Bangkok",flag:"🇹🇭",cat:"Capitale",x:75.0,y:50.5},
+  {n:"Dakar",flag:"🇸🇳",cat:"Capitale",x:42.5,y:48.5},
+  {n:"Mont Everest",flag:"🏔️",cat:"Montagne",x:72.8,y:45.8},
+  {n:"Mont Blanc",flag:"🏔️",cat:"Montagne",x:50.5,y:37.8},
+  {n:"Kilimandjaro",flag:"🏔️",cat:"Montagne",x:59.5,y:56.5},
+  {n:"Aconcagua",flag:"🏔️",cat:"Montagne",x:27.5,y:69.0},
+  {n:"Denali",flag:"🏔️",cat:"Montagne",x:14.5,y:23.0},
+  {n:"Mont Fuji",flag:"🏔️",cat:"Montagne",x:84.0,y:38.5},
+  {n:"Le Nil",flag:"🌊",cat:"Fleuve",x:57.5,y:47.5},
+  {n:"L'Amazone",flag:"🌊",cat:"Fleuve",x:30.5,y:58.0},
+  {n:"Le Congo",flag:"🌊",cat:"Fleuve",x:53.5,y:56.5},
+  {n:"Le Yangtsé",flag:"🌊",cat:"Fleuve",x:76.5,y:42.5},
+];
+
+// STATE
+let mode=null,diff=null,qs=[],qi=0,score=0,ok=0,ko=0,streak=0,bestStreak=0,answered=false;
+let timerID=null,timeLeft=60,mapQs=[],mapQi=0,mapScore=0,mapClicked=false;
+
+// NAV
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('act'));document.getElementById(id).classList.add('act');window.scrollTo(0,0);}
+function toHome(){stopTimer();show('home');}
+
+// UTILS
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+function norm(s){return s.toLowerCase().replace(/[àâä]/g,'a').replace(/[éèêë]/g,'e').replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/[ùûü]/g,'u').replace(/ç/g,'c').replace(/œ/g,'oe').replace(/[^a-z0-9 ]/g,'').trim();}
+function lev(a,b){const m=a.length,n=b.length,dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);return dp[m][n];}
+
+// HOME
+function selMode(el){document.querySelectorAll('.mc').forEach(c=>c.classList.remove('on'));el.classList.add('on');mode=el.dataset.m;if(mode==='carte')diff='facile';checkReady();}
+function selDiff(el){document.querySelectorAll('.db').forEach(b=>b.classList.remove('on'));el.classList.add('on');diff=el.dataset.d;checkReady();}
+function checkReady(){document.getElementById('btnGo').disabled=!(mode&&(mode==='carte'||diff));}
+
+// LAUNCH
+function launch(){
+  if(!mode)return;
+  if(mode==='carte'){startMap();return;}
+  let pool;
+  if(mode==='sprint'){
+    const src=[...DB.capitales.map(d=>({...d,_pool:DB.capitales})),...DB.fleuves.map(d=>({...d,_pool:DB.fleuves})),...DB.montagnes.map(d=>({...d,_pool:DB.montagnes})),...DB.pays.map(d=>({...d,_pool:DB.pays}))];
+    pool=src;
+  } else {
+    pool=DB[mode].map(d=>({...d,_pool:DB[mode]}));
+  }
+  shuffle(pool);
+  const take=mode==='sprint'?pool.length:Math.min(10,pool.length);
+  qs=pool.slice(0,take).map(q=>{
+    const src=q._pool||DB.capitales;
+    const wrongs=shuffle(src.filter(x=>x.a!==q.a).map(x=>x.a)).slice(0,3);
+    const fb=['Europe','Asie','Afrique','Amérique du Nord','Océanie','Pakistan','Brésil','Russie','Chine','Inde'];
+    const used=new Set([...wrongs,q.a]);
+    for(const f of fb){if(!used.has(f)&&wrongs.length<3){wrongs.push(f);used.add(f);}}
+    return{...q,opts:shuffle([q.a,...wrongs.slice(0,3)])};
+  });
+  qi=0;score=0;ok=0;ko=0;streak=0;bestStreak=0;answered=false;
+  show('quiz');
+  const tc=document.getElementById('timeChip');
+  if(mode==='sprint'){tc.classList.add('vis');startTimer();}else{tc.classList.remove('vis','hot');}
+  renderQ();
+}
+
+// TIMER
+function startTimer(){timeLeft=60;const el=document.getElementById('timeChip');el.textContent='60';timerID=setInterval(()=>{timeLeft--;el.textContent=timeLeft;el.classList.toggle('hot',timeLeft<=10);if(timeLeft<=0){stopTimer();showResults();}},1000);}
+function stopTimer(){if(timerID){clearInterval(timerID);timerID=null;}const el=document.getElementById('timeChip');if(el){el.classList.remove('vis','hot');}}
+
+// RENDER Q
+function renderQ(){
+  const q=qs[qi];if(!q){showResults();return;}
+  answered=false;
+  document.getElementById('pbarFill').style.width=(qi/qs.length*100)+'%';
+  document.getElementById('qNumChip').textContent=`Q ${qi+1}/${qs.length}`;
+  document.getElementById('scoreVal').textContent=score;
+  const sc=document.getElementById('streakChip');
+  if(streak>=2){sc.classList.add('vis');document.getElementById('streakVal').textContent=streak;}
+  else sc.classList.remove('vis');
+  const body=document.getElementById('qbody');
+  body.innerHTML='';body.className='qbody q-in';
+  const colors={capitales:'var(--gold)',fleuves:'var(--cyan)',montagnes:'var(--red)',pays:'var(--green)',sprint:'var(--violet)'};
+  const card=document.createElement('div');card.className='q-card';
+  card.style.setProperty('--qbar',colors[mode]||'var(--gold)');
+  card.innerHTML=`<div class="q-num">Question ${qi+1} / ${qs.length}</div><span class="q-flag">${q.flag||'🌍'}</span><div class="q-text">${q.q}</div><div class="q-fact" id="qFact">${q.info||''}</div>`;
+  body.appendChild(card);
+  if(diff==='facile'){
+    const wrap=document.createElement('div');wrap.className='mcq';
+    const ltrs=['A','B','C','D'];
+    (q.opts||[]).forEach((opt,i)=>{
+      const btn=document.createElement('button');btn.className='mcq-btn';
+      btn.innerHTML=`<span class="mcq-ltr">${ltrs[i]}</span>${opt}`;
+      btn.addEventListener('click',()=>checkMCQ(opt,q.a,btn,q));
+      wrap.appendChild(btn);
+    });
+    body.appendChild(wrap);
+  } else {
+    const wrap=document.createElement('div');wrap.className='txt-row';
+    const inp=document.createElement('input');inp.type='text';inp.className='txt-inp';inp.id='tInp';
+    inp.placeholder=diff==='difficile'?'Réponse exacte…':'Ta réponse…';inp.autocomplete='off';
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')checkText(q);});
+    const btn=document.createElement('button');btn.className='btn-val';btn.textContent='Valider';
+    btn.addEventListener('click',()=>checkText(q));
+    wrap.appendChild(inp);wrap.appendChild(btn);body.appendChild(wrap);
+    setTimeout(()=>inp.focus(),80);
+  }
+  const fb=document.createElement('div');fb.className='fb';fb.id='fb';body.appendChild(fb);
+  const nxt=document.createElement('button');nxt.className='btn-next';nxt.id='nxtBtn';nxt.textContent='Question suivante →';
+  nxt.addEventListener('click',()=>{qi++;renderQ();});body.appendChild(nxt);
+}
+
+// CHECK
+function checkMCQ(chosen,correct,btn,q){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.mcq-btn').forEach(b=>b.disabled=true);
+  if(chosen===correct){btn.classList.add('hit');doWin(q);}
+  else{btn.classList.add('miss');document.querySelectorAll('.mcq-btn').forEach(b=>{if(b.textContent.trim().slice(1)===correct)b.classList.add('hit');});doLoss(q);}
+  revealFact();document.getElementById('nxtBtn').classList.add('vis');
+  if(mode==='sprint')setTimeout(()=>{qi++;renderQ();},850);
+}
+function checkText(q){
+  if(answered)return;
+  const inp=document.getElementById('tInp');if(!inp)return;
+  const v=inp.value.trim();if(!v)return;
+  answered=true;inp.disabled=true;
+  const vb=document.querySelector('.btn-val');if(vb)vb.disabled=true;
+  const pass=diff==='difficile'?norm(v)===norm(q.a)||lev(norm(v),norm(q.a))<=1:norm(q.a).includes(norm(v))||norm(v).includes(norm(q.a))||lev(norm(v),norm(q.a))<=2;
+  if(pass){inp.classList.add('hit');doWin(q);}else{inp.classList.add('miss');doLoss(q);}
+  revealFact();document.getElementById('nxtBtn').classList.add('vis');
+  if(mode==='sprint')setTimeout(()=>{qi++;renderQ();},850);
+}
+function doWin(q){streak++;bestStreak=Math.max(streak,bestStreak);const bonus=streak>=3?streak*2:0;const pts=(diff==='difficile'?15:10)+bonus;score+=pts;ok++;document.getElementById('scoreVal').textContent=score;const fb=document.getElementById('fb');fb.className='fb vis hit';fb.innerHTML=`<span class="fb-ico">✅</span><span class="fb-msg">Correct !${bonus>0?` <strong>+${bonus} pts combo 🔥</strong>`:''}</span>`;}
+function doLoss(q){streak=0;ko++;const fb=document.getElementById('fb');fb.className='fb vis miss';fb.innerHTML=`<span class="fb-ico">❌</span><span class="fb-msg">Faux — c'était : <strong>${q.a}</strong></span>`;}
+function revealFact(){const f=document.getElementById('qFact');if(f&&f.textContent.trim())f.classList.add('vis');}
+
+// MAP MODE
+function startMap(){mapQs=shuffle([...MAP_DATA]).slice(0,10);mapQi=0;mapScore=0;ok=0;ko=0;streak=0;bestStreak=0;score=0;show('mapscreen');renderMapQ();}
+function renderMapQ(){
+  const q=mapQs[mapQi];if(!q){score=mapScore;showResults();return;}
+  mapClicked=false;
+  document.getElementById('mFlag').textContent=q.flag;
+  document.getElementById('mQTxt').textContent=`Où se trouve ${q.n} ?`;
+  document.getElementById('mQCat').textContent=q.cat;
+  document.getElementById('mQNum').textContent=`${mapQi+1}/10`;
+  document.getElementById('mScoreVal').textContent=mapScore;
+  document.getElementById('mPbarFill').style.width=(mapQi/10*100)+'%';
+  document.getElementById('pinsSvg').innerHTML='';
+  document.getElementById('mapPopup').classList.remove('vis');
+  const h=document.getElementById('clickHint');h.classList.remove('gone');h.style.visibility='visible';
+}
+function onMapClick(e){
+  if(mapClicked)return;mapClicked=true;
+  const q=mapQs[mapQi];if(!q)return;
+  const wrap=document.getElementById('mapWrap');
+  const rect=wrap.getBoundingClientRect();
+  const gx=((e.clientX-rect.left)/rect.width)*100;
+  const gy=((e.clientY-rect.top)/rect.height)*100;
+  document.getElementById('clickHint').classList.add('gone');
+  addPin(gx,gy,'#b48eff','#7c3aed','?');
+  setTimeout(()=>{
+    addPin(q.x,q.y,'#22d982','#16a34a',q.flag);
+    addLine(gx,gy,q.x,q.y);addLabel(q.x,q.y,q.n);
+    const d=Math.sqrt((gx-q.x)**2+(gy-q.y)**2);
+    const km=Math.round(d*310);
+    let pts=0,col='#ff4d6d';
+    if(km<80){pts=500;col='#22d982';}else if(km<300){pts=400;col='#4ade80';}else if(km<700){pts=300;col='#fde68a';}else if(km<1500){pts=200;col='#f0b429';}else if(km<3000){pts=100;col='#fb923c';}else if(km<5000){pts=50;col='#f87171';}
+    mapScore+=pts;ok++;
+    const pd=document.getElementById('popDist'),ps=document.getElementById('popSub');
+    pd.style.color=col;pd.textContent=km<80?'🎯 Parfait !':km+' km';
+    ps.innerHTML=`<strong style="color:${col}">+${pts}</strong> points`;
+    document.getElementById('mapPopup').classList.add('vis');
+  },380);
+}
+function nextMapQ(){mapQi++;if(mapQi>=mapQs.length){score=mapScore;showResults();}else renderMapQ();}
+function addPin(xp,yp,c1,c2,lbl){
+  const svg=document.getElementById('pinsSvg');
+  const x=xp/100*2000,y=yp/100*1001;
+  const id='p'+Math.random().toString(36).slice(2,8);
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.innerHTML=`<defs><radialGradient id="${id}" cx="40%" cy="30%" r="70%"><stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/></radialGradient></defs><circle cx="${x}" cy="${y}" r="22" fill="${c1}" opacity="0.15"/><circle cx="${x}" cy="${y}" r="12" fill="url(#${id})" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="12" fill="white">${lbl}</text>`;
+  svg.appendChild(g);
+}
+function addLine(x1p,y1p,x2p,y2p){
+  const svg=document.getElementById('pinsSvg');
+  const el=document.createElementNS('http://www.w3.org/2000/svg','line');
+  el.setAttribute('x1',x1p/100*2000);el.setAttribute('y1',y1p/100*1001);
+  el.setAttribute('x2',x2p/100*2000);el.setAttribute('y2',y2p/100*1001);
+  el.setAttribute('stroke','rgba(255,255,255,.3)');el.setAttribute('stroke-width','2');el.setAttribute('stroke-dasharray','7 5');
+  svg.appendChild(el);
+}
+function addLabel(xp,yp,text){
+  const svg=document.getElementById('pinsSvg');
+  const x=xp/100*2000,y=yp/100*1001;
+  const w=text.length*8+18;
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.innerHTML=`<rect x="${x-w/2}" y="${y-42}" width="${w}" height="22" rx="6" fill="rgba(4,6,15,.88)" stroke="rgba(34,217,130,.4)" stroke-width="1"/><text x="${x}" y="${y-26}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="13" font-weight="700" fill="#22d982">${text}</text>`;
+  svg.appendChild(g);
+}
+
+// RESULTS
+function showResults(){
+  stopTimer();
+  const tot=mode==='carte'?mapQs.length:qs.length;
+  const pct=tot>0?Math.round((ok/tot)*100):0;
+  const canvas=document.getElementById('resCanvas');
+  const ctx=canvas.getContext('2d');
+  const cx=78,cy=78,R=66;
+  ctx.clearRect(0,0,156,156);
+  ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.strokeStyle='rgba(255,255,255,.06)';ctx.lineWidth=9;ctx.stroke();
+  if(pct>0){const end=(pct/100)*Math.PI*2-Math.PI/2;ctx.beginPath();ctx.arc(cx,cy,R,-Math.PI/2,end);const g=ctx.createLinearGradient(cx-R,cy,cx+R,cy);g.addColorStop(0,'#fde68a');g.addColorStop(1,'#f0b429');ctx.strokeStyle=g;ctx.lineWidth=9;ctx.lineCap='round';ctx.stroke();}
+  document.getElementById('resBigNum').textContent=mode==='carte'?mapScore:ok;
+  document.getElementById('resDenom').textContent=mode==='carte'?'pts':`/ ${tot}`;
+  document.getElementById('rsOk').textContent=ok;
+  document.getElementById('rsKo').textContent=ko;
+  document.getElementById('rsPts').textContent=score;
+  document.getElementById('rsBest').textContent=bestStreak;
+  const msgs=[[90,'🏆 LÉGENDAIRE !','Tu es un génie de la géographie mondiale.'],[70,'🌟 EXCELLENT !','Belle maîtrise du monde, chapeau !'],[50,'👍 PAS MAL !','Continue, tu progresses !'],[0,'📚 CONTINUE !','La géo s\'apprend avec de la pratique.']];
+  const [,t,s]=msgs.find(([p])=>pct>=p);
+  document.getElementById('resTitle').textContent=t;
+  document.getElementById('resSub').textContent=s;
+  show('results');
+  if(pct>=70)launchConfetti();
+}
+
+// CONFETTI
+function launchConfetti(){
+  const c=document.getElementById('confetti');
+  c.width=innerWidth;c.height=innerHeight;c.style.display='block';
+  const ctx=c.getContext('2d');
+  const cols=['#f0b429','#fde68a','#00eeff','#22d982','#b48eff','#ff4d6d','#fff'];
+  const ps=Array.from({length:130},()=>({x:Math.random()*c.width,y:-Math.random()*200-20,vx:(Math.random()-.5)*4,vy:Math.random()*4+2,r:Math.random()*7+3,rot:Math.random()*360,rv:(Math.random()-.5)*7,col:cols[Math.floor(Math.random()*cols.length)],rect:Math.random()>.5}));
+  let f=0;
+  function draw(){ctx.clearRect(0,0,c.width,c.height);ps.forEach(p=>{ctx.save();ctx.globalAlpha=Math.max(0,1-f/160);ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.col;if(p.rect){ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);}else{ctx.beginPath();ctx.arc(0,0,p.r*.5,0,Math.PI*2);ctx.fill();}ctx.restore();p.x+=p.vx;p.y+=p.vy;p.vy+=.06;p.rot+=p.rv;});f++;if(f<200)requestAnimationFrame(draw);else{ctx.clearRect(0,0,c.width,c.height);c.style.display='none';}}
+  draw();
+}
+
+</script>
+</body>
+</html>
